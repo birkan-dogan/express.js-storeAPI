@@ -1,10 +1,5 @@
 const Product = require("../models/productsModel");
 
-const getAllProductsStatic = async (req, res) => {
-  const products = await Product.find();
-  res.status(200).json({ status: "success", size: products.length, products });
-};
-
 const getAllProducts = async (req, res) => {
   const { featured, company, name, sort, fields } = req.query; // that's our logic.
   const queryObject = {};
@@ -36,9 +31,16 @@ const getAllProducts = async (req, res) => {
     result = result.select(fieldsList);
   }
 
+  // /api/v1/products?sort=rating&limit=5&page=4
+  const page = +req.query.page || 1;
+  const limit = +req.query.limit || 10;
+  const skip = (page - 1) * limit;
+
+  result = result.skip(skip).limit(limit);
+
   const products = await result;
 
   res.status(200).json({ status: "success", size: products.length, products });
 };
 
-module.exports = { getAllProducts, getAllProductsStatic };
+module.exports = { getAllProducts };
